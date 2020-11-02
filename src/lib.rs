@@ -45,8 +45,6 @@ pub fn parse(input: &str) -> Result<Command, Error> {
         return Err(Error::EmptyMessage);
     }
 
-    println!("{:?}, {:?}", verb, message);
-
     match verb.unwrap().trim() {
         "RETRIEVE" => unimplemented!(),
         "PUBLISH" => {
@@ -83,10 +81,34 @@ mod tests {
     }
 
     #[test]
+    fn unexpected_payload_with_newline() {
+        let line = "PUBLISH \nTestMessage";
+        let result: Result<Command, Error> = parse(line);
+        let expected = Err(Error::UnexpectedPayload);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn error_empty_message_when_none_value() {
         let line = "";
         let result: Result<Command, Error> = parse(line);
         let expected = Err(Error::EmptyMessage);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn unknown_verb_error_test() {
+        let line = "UNKNOWNVERB";
+        let result: Result<Command, Error> = parse(line);
+        let expected = Err(Error::UnknownVerb);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn valid_empty_message_test() {
+        let line = "PUBLISH \n";
+        let result: Result<Command, Error> = parse(line);
+        let expected = Ok(Command::Publish("".into()));
         assert_eq!(result, expected);
     }
 }
